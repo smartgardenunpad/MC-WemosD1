@@ -1,4 +1,3 @@
-//Connecting Arduino Mega to Thingspeak via GET & ESP8266
 #define SSID "Unpad Wifi"    // put here the name of your wifi network
 #define PASS ""             // put here the password of your wifi network
 #define IP "184.106.153.149" // thingspeak.com's IP
