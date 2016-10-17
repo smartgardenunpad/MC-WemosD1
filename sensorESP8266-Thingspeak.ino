@@ -4,8 +4,8 @@
 #include <BH1750.h>
 
 //Header AT Command & Thingspeak
-#define SSID "smartgarden"    // put here the name of your wifi network
-#define PASS "aduhlupaeuy"             // put here the password of your wifi network
+#define SSID "UnpadWiFi"    // put here the name of your wifi network
+#define PASS ""             // put here the password of your wifi network
 #define IP "184.106.153.149" // thingspeak.com's IP
 
 //define pH
@@ -35,15 +35,20 @@ float temperature,ECcurrent;
 //Temperature chip i/o
 OneWire ds(DS18B20_Pin);  // on digital pin 2
 
+//Air Temperature
+#define TAsensorPin A2
+
 String BH = ""; //String untuk menampung nilai BH1750
 String pH = "";//String untuk menampung nilai pH
 String EC = ""; // String untuk menampung nilai EC
-String T = ""; // String untuk menampung nilai temperature
+String TW = ""; // String untuk menampung nilai water temperature
+String TA = ""; // String untuk menampung nilai Air temperature
 String GET = "GET https://api.thingspeak.com/update?api_key=AH7MJ789VHT51RAR";    // String untuk fungsi GET ke HTTP Thingspeak
 String GET1 = "&field1=";//field BH1750
 String GET2 = "&field2=";//field pH
 String GET3 = "&field3=";//field EC
-String GET4 = "&field4=";//field temp
+String GET4 = "&field4=";//field water temp
+String GET5 = "&field5=";//field air temp
 String cmd = "";
 
 //String Cahaya
@@ -135,13 +140,13 @@ String cmd = "";
     }
   }
   
-String TVal(){
-  char TValue_str[15];
+String TWVal(){
+  char TWValue_str[15];
 
-  float TValue = getTemp();
-  dtostrf(TValue, 4, 2, TValue_str);
-  return (String) TValue_str;
-  Serial.print(TValue,2);
+  float TWValue = getTemp();
+  dtostrf(TWValue, 4, 2, TWValue_str);
+  return (String) TWValue_str;
+  Serial.print(TWValue,2);
   delay(100); //just here to slow down the output so it is easier to read
 }
 
@@ -186,9 +191,20 @@ float getTemp(){
   
   return TemperatureSum;
   }
+
+  String TAVal(){
+  char TAValue_str[15];
+
+  float TAValue = analogRead(TAsensorPin);
+  TAValue = TAValue*5*100.00/1024;
+  dtostrf(TAValue, 4, 2, TAValue_str);
+  return (String) TAValue_str;
+  Serial.print (TAValue,2);
+  delay(1000);
+  }
   
 //Fungsi kirim dan update data
-void updateFunction(String light, String pHVal, String ECVal, String TVal){
+void updateFunction(String light, String pHVal, String ECVal, String TWVal, String TAVal){
   cmd = "AT+CIPSTART=\"TCP\",\"";
   cmd += IP;
   cmd += "\",80";
@@ -205,7 +221,9 @@ void updateFunction(String light, String pHVal, String ECVal, String TVal){
   cmd += GET3;
   cmd += ECVal;
   cmd += GET4;
-  cmd += TVal;
+  cmd += TWVal;
+  cmd += GET5;
+  cmd += TAVal;
   cmd += "\r\n";
   Serial.print(cmd);
   Serial2.print("AT+CIPSEND=");
@@ -261,7 +279,8 @@ void loop(){
   pH = pHVal();
   BH = light();
   EC = ECVal();
-  T = TVal();
-  updateFunction(BH, pH, EC, T);
+  TW = TWVal();
+  TA = TAVal();
+  updateFunction(BH, pH, EC, TW, TA);
   delay(1000);
 }
